@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 9/8/18 6:04 PM
 
+# 引入ｋＮＮClassifier
 from faceyou.kNN import KNNClassifier
 from faceyou import train_spilt
 from sklearn import datasets
