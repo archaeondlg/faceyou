@@ -80,6 +80,53 @@ def gradAscent(dataMatIn, classLabels):
     return weights
 
 
+def stocGradAscent0(dataMatrix, classLabels, history_weights):
+    """
+    随机梯度上升算法
+    :param dataMatrix:
+    :param classLabels:
+    :param history_weights:
+    :return: 权值向量
+    """
+    dataMatrix = array(dataMatrix)
+    m, n = shape(dataMatrix)
+    alpha = 0.01
+    weights = ones(n)
+    for i in range(m):
+        # 挑选（伪随机）第i个实例来更新
+        h = sigmoid(sum(dataMatrix[i] * weights))
+        error = classLabels[i] - h
+        weights = weights + dataMatrix[i] * alpha * error
+        history_weights.append(copy(weights))
+    return weights
+
+
+def stocGradAscent1(dataMatrix, classLabels, numIter=150):
+    """
+    改进的随机梯度上升算法
+    :param dataMatrix:
+    :param classLabels:
+    :param numIter: 迭代次数
+    :return:
+    """
+    dataMatrix = array(dataMatrix)
+    m, n = shape(dataMatrix)
+    weights = ones(n)
+    for j in range(numIter):
+        dataIndex = range(m)
+        for i in range(m):
+            # 步长递减，但？
+            alpha = 4 / (1.0 + j + i) + 0.0001
+            # 真随机
+            randIndex = int(random.uniform(0, len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[randIndex] * weights))
+            error = classLabels[randIndex] - h
+            weights = weights + dataMatrix[randIndex] * alpha * error
+            # 删除样本
+            del (dataIndex[randIndex])
+    return weights
+
+
 if __name__ == '__main__':
     dataArr, labelMat = loadDataSet()
     weights = gradAscent(dataArr, labelMat)
