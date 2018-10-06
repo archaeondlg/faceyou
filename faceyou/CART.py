@@ -66,6 +66,7 @@ def getbestfeat(dataset):
     best_feature_value = 0
 
     for feature_index in range(column_length - 1):
+        print(feature_index)
         # 获取该特征列表，转为集合会发生数据去重！！！
         col_value_set = set([data[feature_index] for data in dataset])
         # 对于该特征的每个可能取值
@@ -94,10 +95,14 @@ def createTree(dataset, labels):
     classList = [example[-1] for example in dataset]
     if classList.count(classList[0]) == len(classList):
         return classList[0]  # 所有的类别都一样，就不用再划分了
-    if len(dataset[0]) == 1:  # 如果没有继续可以划分的特征，就多数表决决定分支的类别
+    if len(dataset[0]) == 1 or len(labels) == 1:  # 如果没有继续可以划分的特征，就多数表决决定分支的类别
         return voter(classList)
     best_feature_index, best_feature_value = getbestfeat(dataset)
     bestFeat = best_feature_index
+    # print(classList)
+    # print(labels)
+    # print(bestFeat)
+    # print(best_feature_value)
     bestFeatLabel = labels[bestFeat]
     myTree = {bestFeatLabel: {}}
     del (labels[bestFeat])
