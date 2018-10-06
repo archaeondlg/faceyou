@@ -44,6 +44,11 @@ def getWeakClassifiers(dataArr, classLabels, D):
     # 计算特征中使得误差率最小的特征
     # 计算出用来分割的值，即在上文中的a
     dataset, labels = testSet.horse('train', labels=True)
+    newDataSet = []
+    min_weights = D.min()
+    for i in range(len(dataset)):
+        newDataSet.extend([dataset[i]] * int(math.ceil(float(array(D.T)[0][i] / min_weights))))
+
     for i in range(n):
         # 计算每个特征的最大值与最小值
         rangeMin = dataMatrix[:, i].min()
@@ -56,7 +61,7 @@ def getWeakClassifiers(dataArr, classLabels, D):
             for inequal in ['lt', 'gt']:
                 # np 印象中有类似分段的函数，待考察
                 threshVal = (rangeMin + float(j) * stepSize)
-                CARTtree = CART.createTree(dataset, labels)
+                CARTtree = CART.createTree(newDataSet, labels)
                 predictedVals = CART.classifylist(CARTtree, dataset)
                 # predictedVals = stumpClassify(dataMatrix, i, threshVal, inequal)
                 # 初始化为1，标记为错误
@@ -75,7 +80,7 @@ def getWeakClassifiers(dataArr, classLabels, D):
     return bestStump, minError, bestClasEst
 
 
-def adaBoostTrainDS(dataArr, classLabels, numIt=40):
+def adaBoostTrainDS(dataArr, classLabels, numIt=4):
     """
     基于单层决策树的AdaBoost训练函数
     当训练错误率达到0就会提前结束训练
@@ -118,8 +123,8 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=40):
         # 与ones((m,1)相乘，即得到误差个数
         aggErrors = multiply(sign(aggClassEst) != mat(classLabels).T, ones((m, 1)))
         errorRate = aggErrors.sum() / m
-        print("total error: ")
-        print(errorRate)
+        # print("total error: ")
+        # print(errorRate)
         # 当训练错误率达到0就会提前结束
         if errorRate == 0.0:
             break
