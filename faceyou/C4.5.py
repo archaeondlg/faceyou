@@ -5,6 +5,7 @@
 from math import log
 import operator
 from collections import Counter
+from faceyou import testSet
 
 
 def calcShannonEnt(dataSet):
@@ -45,21 +46,6 @@ def get_punishment_para(dataset, axis):
         prob = float(vote[index]) / numEntries
         penalty_param -= log(prob, 2)
     return penalty_param
-
-
-# 创造示例数据
-def initdataSet():
-    dataSet = [['长', '粗', '男'],
-               ['短', '粗', '男'],
-               ['短', '粗', '男'],
-               ['长', '细', '女'],
-               ['短', '细', '女'],
-               ['短', '粗', '女'],
-               ['长', '粗', '女'],
-               ['长', '粗', '女']]
-    # 两个特征
-    labels = ['头发', '声音']
-    return dataSet, labels
 
 
 # 按某个特征分类后的数据
@@ -161,5 +147,5 @@ def createTree(dataSet, labels):
 
 
 if __name__ == '__main__':
-    dataSet, labels = initdataSet()
+    dataSet, labels = testSet.gender()
     print(createTree(dataSet, labels))
