@@ -65,4 +65,4 @@ def horse(type, labels=False):
             dataMat.append(lineArr)
             labelMat.append(float(curLine[-1]))
 
-        return dataMat, [alphabet[index] for index in range(numFeat)]
+        return dataMat, [alphabet[index] for index in range(numFeat - 1)]

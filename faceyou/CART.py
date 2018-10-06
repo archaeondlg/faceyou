@@ -66,7 +66,6 @@ def getbestfeat(dataset):
     best_feature_value = 0
 
     for feature_index in range(column_length - 1):
-        print(feature_index)
         # 获取该特征列表，转为集合会发生数据去重！！！
         col_value_set = set([data[feature_index] for data in dataset])
         # 对于该特征的每个可能取值
@@ -99,17 +98,19 @@ def createTree(dataset, labels):
         return voter(classList)
     best_feature_index, best_feature_value = getbestfeat(dataset)
     bestFeat = best_feature_index
-    # print(classList)
-    # print(labels)
+    # print('数据集长度',len(dataset[0]))
+    # print('标签长度', len(labels))
     # print(bestFeat)
     # print(best_feature_value)
+    if bestFeat >= len(labels):
+        return voter(classList)
     bestFeatLabel = labels[bestFeat]
     myTree = {bestFeatLabel: {}}
     del (labels[bestFeat])
     featValues = [example[bestFeat] for example in dataset]
     uniqueVals = set(featValues)
     for value in uniqueVals:
-        subLabels = labels[:]  # copy all of labels, so trees don't mess up existing labels
+        subLabels = labels[:]
         myTree[bestFeatLabel][value] = createTree(splitDataSet(dataset, bestFeat, value), subLabels)
     return myTree
 
@@ -118,7 +119,7 @@ def splitDataSet(dataSet, axis, value):
     retDataSet = []
     for featVec in dataSet:
         if featVec[axis] == value:
-            reducedFeatVec = featVec[:axis]  # chop out axis used for splitting
+            reducedFeatVec = featVec[:axis]
             reducedFeatVec.extend(featVec[axis + 1:])
             retDataSet.append(reducedFeatVec)
     return retDataSet
@@ -154,6 +155,8 @@ def isTree(obj):
 
 
 def classify(inputTree, featLabels, testVec):  # 输入构造好的决策树
+    if type(inputTree).__name__ == 'float':
+        return inputTree
     firstStr = list(inputTree.keys())[0]  # 第一层
     secondDict = inputTree[firstStr]  # 第二层
     # print(featLabels)
@@ -180,7 +183,7 @@ def classifylist(tree, dataset):
         res = classify(tree, classList, dataset[i])
         errorList[i] = res <= classList[i]
         predictResult.append([int(res)])
-    return errorList, np.mat(predictResult)
+    return errorList
 
 
 # 计算预测误差

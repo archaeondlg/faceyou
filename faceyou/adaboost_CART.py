@@ -4,31 +4,7 @@
 
 from numpy import *
 from faceyou import testSet
-
-def loadSimpData():
-    datMat = matrix([[1., 2.1],
-                     [2., 1.1],
-                     [1.3, 1.],
-                     [1., 1.],
-                     [2., 1.]])
-    classLabels = [1.0, 1.0, -1.0, -1.0, 1.0]
-    return datMat, classLabels
-
-
-# 从本地文件读取数据
-def loadDataSet(fileName):  # general function to parse tab -delimited floats
-    numFeat = len(open(fileName).readline().split('\t'))  # get number of fields
-    dataMat = []
-    labelMat = []
-    fr = open(fileName)
-    for line in fr.readlines():
-        lineArr = []
-        curLine = line.strip().split('\t')
-        for i in range(numFeat - 1):
-            lineArr.append(float(curLine[i]))
-        dataMat.append(lineArr)
-        labelMat.append(float(curLine[-1]))
-    return dataMat, labelMat
+from faceyou import CART
 
 
 def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):
@@ -49,7 +25,7 @@ def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):
     return retArray
 
 
-def buildStump(dataArr, classLabels, D):
+def getWeakClassifiers(dataArr, classLabels, D):
     """
     在加权数据集里面寻找最低错误率的单层决策树
     :param dataArr:
@@ -67,6 +43,7 @@ def buildStump(dataArr, classLabels, D):
     minError = inf
     # 计算特征中使得误差率最小的特征
     # 计算出用来分割的值，即在上文中的a
+    dataset, labels = testSet.horse('train', labels=True)
     for i in range(n):
         # 计算每个特征的最大值与最小值
         rangeMin = dataMatrix[:, i].min()
@@ -79,7 +56,9 @@ def buildStump(dataArr, classLabels, D):
             for inequal in ['lt', 'gt']:
                 # np 印象中有类似分段的函数，待考察
                 threshVal = (rangeMin + float(j) * stepSize)
-                predictedVals = stumpClassify(dataMatrix, i, threshVal, inequal)
+                CARTtree = CART.createTree(dataset, labels)
+                predictedVals = CART.classifylist(CARTtree, dataset)
+                # predictedVals = stumpClassify(dataMatrix, i, threshVal, inequal)
                 # 初始化为1，标记为错误
                 errArr = mat(ones((m, 1)))
                 # 标记正确结果为0
@@ -116,7 +95,7 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=40):
     for i in range(numIt):
         # 计算在当前样本权值D下的最小误差
         # 获取最优决策树桩
-        bestStump, error, classEst = buildStump(dataArr, classLabels, D)
+        bestStump, error, classEst = getWeakClassifiers(dataArr, classLabels, D)
         # 根据错误率计算权重alpha值
         # max(error, 1e-16)避免出现分母为0
         alpha = float(0.5 * log((1.0 - error) / max(error, 1e-16)))
@@ -124,10 +103,7 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=40):
         # 将当前分类器结果添加到分类器集
         weakClassArr.append(bestStump)
         # 计算下一次迭代中的权重向量D
-        xx = -1 * alpha * mat(classLabels).T
-        print(xx.shape)
-        print(classEst.shape)
-        expon = multiply(xx, classEst)
+        expon = multiply(-1 * alpha * mat(classLabels).T, classEst)
         # 更新D
         D = multiply(D, exp(expon))
         # 归一化
@@ -169,16 +145,6 @@ def adaClassify(datToClass, classifierArr):
 
 
 if __name__ == '__main__':
-    dataMat, classLabels = loadSimpData()
-    # D = mat(ones((5, 1)) / 5)
-    # bestStump, minError, bestClasEst = buildStump(dataMat, classLabels, D)
-    # print(bestStump, minError, bestClasEst)
-    weakClassArr = adaBoostTrainDS(dataMat, classLabels)
-    # print(weakClassArr)
-    # agg = adaClassify(classLabels, weakClassArr)
-    # print(agg)
-
-
     # 马疝病数据集测试
     dataArr, labelArr = testSet.horse('train')
     classifierArray = adaBoostTrainDS(dataArr, labelArr, 10)
