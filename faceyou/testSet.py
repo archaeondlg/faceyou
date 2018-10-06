@@ -36,20 +36,33 @@ def gender():
     return data_set, labels
 
 
-def horse(type):
+def horse(type, labels=False):
     if type == 'train':
-        filename = '../data/horse.txt'
+        filename = '../data/horseColicTrain.txt'
+        # filename = '../data/horse.txt'
     else:
         filename = '../data/horseColicTest.txt'
     numFeat = len(open(filename).readline().split('\t'))  # get number of fields
     dataMat = []
     labelMat = []
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     fr = open(filename)
-    for line in fr.readlines():
-        lineArr = []
-        curLine = line.strip().split('\t')
-        for i in range(numFeat - 1):
-            lineArr.append(float(curLine[i]))
-        dataMat.append(lineArr)
-        labelMat.append(float(curLine[-1]))
-    return dataMat, labelMat
+    if not labels:
+        for line in fr.readlines():
+            lineArr = []
+            curLine = line.strip().split('\t')
+            for i in range(numFeat - 1):
+                lineArr.append(float(curLine[i]))
+            dataMat.append(lineArr)
+            labelMat.append(float(curLine[-1]))
+        return dataMat, labelMat
+    else:
+        for line in fr.readlines():
+            lineArr = []
+            curLine = line.strip().split('\t')
+            for i in range(numFeat):
+                lineArr.append(float(curLine[i]))
+            dataMat.append(lineArr)
+            labelMat.append(float(curLine[-1]))
+
+        return dataMat, [alphabet[index] for index in range(numFeat)]

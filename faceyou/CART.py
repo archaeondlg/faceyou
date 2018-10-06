@@ -5,6 +5,8 @@
 from faceyou import testSet
 import operator
 import copy
+import numpy as np
+
 
 def calcgini(dataset):
     """
@@ -141,59 +143,82 @@ def voter(datas):
     sorted_counter = sorted(counter.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_counter[0][0]
 
-def isTree(obj):
-    return (type(obj).__name__=='dict')
 
-def classify(inputTree,featLabels,testVec):#输入构造好的决策树
-    firstStr=list(inputTree.keys())[0]#第一层
-    secondDict=inputTree[firstStr]#第二层
-    featIndex=featLabels.index(firstStr)#特征值得索引
+def isTree(obj):
+    return (type(obj).__name__ == 'dict')
+
+
+def classify(inputTree, featLabels, testVec):  # 输入构造好的决策树
+    firstStr = list(inputTree.keys())[0]  # 第一层
+    secondDict = inputTree[firstStr]  # 第二层
+    # print(featLabels)
+    # print(firstStr)
+    featIndex = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(firstStr)  # 特征值的索引
     for key in list(secondDict.keys()):
-        if testVec[featIndex]==key:
-            if type(secondDict[key]).__name__=='dict':
-                global classLabel#注意局部变量与全局变量的关系，否则会报错
-                classLabel=classify(secondDict[key],featLabels,testVec)
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == 'dict':
+                # 注意局部变量与全局变量的关系，否则会报错
+                global classLabel
+                classLabel = classify(secondDict[key], featLabels, testVec)
             else:
-                classLabel=secondDict[key]
+                classLabel = secondDict[key]
     return classLabel
 
+def classifylist(tree, dataset):
+    # 返回预测对或者错，而不是返回预测的结果(对为0，错为1，方便计算预测错误的个数)
+    rank, axis = np.shape(dataset)
+    errorList = np.ones((rank, 1))
+    # 记录预测的结果
+    predictResult = []
+    classList = [example[-1] for example in dataset]
+    for i in range(rank):
+        res = classify(tree, classList, dataset[i])
+        errorList[i] = res <= classList[i]
+        predictResult.append([int(res)])
+    return errorList, np.mat(predictResult)
+
+
 # 计算预测误差
-def calcTestErr(myTree,testData,labels):
+def calcTestErr(myTree, testData, labels):
     errorCount = 0.0
     for i in range(len(testData)):
-        if classify(myTree,labels,testData[i]) != testData[i][-1]:
+        if classify(myTree, labels, testData[i]) != testData[i][-1]:
             errorCount += 1
     return float(errorCount)
 
+
 # 计算剪枝后的预测误差
-def testMajor(major,testData):
+def testMajor(major, testData):
     errorCount = 0.0
     for i in range(len(testData)):
         if major != testData[i][-1]:
             errorCount += 1
     return float(errorCount)
 
-def pruningTree(inputTree,dataSet,testData,labels):
+
+def pruningTree(inputTree, dataSet, testData, labels):
     firstStr = list(inputTree.keys())[0]
-    secondDict = inputTree[firstStr]        # 获取子树
+    secondDict = inputTree[firstStr]  # 获取子树
     classList = [example[-1] for example in dataSet]
     featKey = copy.deepcopy(firstStr)
     labelIndex = labels.index(featKey)
     subLabels = copy.deepcopy(labels)
-    del(labels[labelIndex])
+    del (labels[labelIndex])
     for key in list(secondDict.keys()):
         if isTree(secondDict[key]):
             # 深度优先搜索,递归剪枝
-            subDataSet = splitDataSet(dataSet,labelIndex,key)
-            subTestSet = splitDataSet(testData,labelIndex,key)
+            subDataSet = splitDataSet(dataSet, labelIndex, key)
+            subTestSet = splitDataSet(testData, labelIndex, key)
             if len(subDataSet) > 0 and len(subTestSet) > 0:
-                inputTree[firstStr][key] = pruningTree(secondDict[key],subDataSet,subTestSet,copy.deepcopy(labels))
-    if calcTestErr(inputTree,testData,subLabels) < testMajor(voter(classList),testData):
+                inputTree[firstStr][key] = pruningTree(secondDict[key], subDataSet, subTestSet, copy.deepcopy(labels))
+    if calcTestErr(inputTree, testData, subLabels) < testMajor(voter(classList), testData):
         # 剪枝后的误差反而变大，不作处理，直接返回
         return inputTree
     else:
         # 剪枝，原父结点变成子结点，其类别由多数表决法决定
         return voter(classList)
+
+
 if __name__ == '__main__':
     dataSet, labels = testSet.loan()
     tree = createTree(dataSet, labels)

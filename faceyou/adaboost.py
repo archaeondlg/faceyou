@@ -130,9 +130,10 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=40):
         # 归一化
         D = D / D.sum()
         # 错误率累加
-        # classEst的值为1或-1，alpha*classEst为每一个分类器的权值与对应样本的类别相乘，下式对所有的分类器进行相加，得到最终的类别，不过还要在用sign函数
-        print('+++++')
-        print(classEst)
+        # classEst的值为1或-1
+        # alpha*classEst为每一个分类器的权值与对应样本的类别相乘
+        # 下式对所有的分类器进行相加，得到最终的类别
+        # 再用sign函数
         aggClassEst += alpha * classEst
         # sign(aggClassEst)表示根据正负号分别标记为正负1
         # 与ones((m,1)相乘，即得到误差个数
@@ -172,7 +173,6 @@ if __name__ == '__main__':
     weakClassArr = adaBoostTrainDS(dataMat, classLabels)
     # print(weakClassArr)
     # agg = adaClassify(classLabels, weakClassArr)
-    # print("+++++++++++++++++++")
     # print(agg)
 
 
