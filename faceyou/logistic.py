@@ -4,21 +4,7 @@
 
 from numpy import *
 import matplotlib.pyplot as plt
-
-
-def loadDataSet():
-    """
-    加载数据集
-    :return:输入向量矩阵和输出向量
-    """
-    dataMat = []
-    labelMat = []
-    fr = open('testSet.txt')
-    for line in fr.readlines():
-        lineArr = line.strip().split()
-        dataMat.append([1.0, float(lineArr[0]), float(lineArr[1])])
-        labelMat.append(int(lineArr[2]))
-    return dataMat, labelMat
+from faceyou import testSet
 
 
 def plotBestFit(weights):
@@ -27,7 +13,7 @@ def plotBestFit(weights):
     :param weights:
     :return:
     """
-    dataMat, labelMat = loadDataSet()
+    dataMat, labelMat = testSet.test()
     dataArr = array(dataMat)
     n = shape(dataArr)[0]
     xcord1 = []
@@ -128,6 +114,6 @@ def stocGradAscent1(dataMatrix, classLabels, numIter=150):
 
 
 if __name__ == '__main__':
-    dataArr, labelMat = loadDataSet()
+    dataArr, labelMat = testSet.test()
     weights = gradAscent(dataArr, labelMat)
     plotBestFit(weights)

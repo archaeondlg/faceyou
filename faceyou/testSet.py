@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # @Time    : 9/24/18 11:59 PM
 
+import numpy as np
+
 
 def loan():
     data_set = [['youth', 'no', 'no', '1', 'refuse'],
@@ -66,3 +68,48 @@ def horse(type, labels=False):
             labelMat.append(float(curLine[-1]))
 
         return dataMat, [alphabet[index] for index in range(numFeat - 1)]
+
+
+def test():
+    """
+    简单数据集
+    :return:输入向量矩阵和输出向量
+    """
+    dataMat = []
+    labelMat = []
+    fr = open('./../data/testSet.txt')
+    for line in fr.readlines():
+        lineArr = line.strip().split()
+        dataMat.append([1.0, float(lineArr[0]), float(lineArr[1])])
+        labelMat.append(int(lineArr[2]))
+    return dataMat, labelMat
+
+
+def simple():
+    datMat = np.matrix([[1., 2.1],
+                        [2., 1.1],
+                        [1.3, 1.],
+                        [1., 1.],
+                        [2., 1.]])
+    classLabels = [1.0, 1.0, -1.0, -1.0, 1.0]
+    return datMat, classLabels
+
+
+def loadDataSet(fileName):
+    """
+    从本地文件读取数据
+    :param fileName:
+    :return:
+    """
+    numFeat = len(open(fileName).readline().split('\t'))
+    dataMat = []
+    labelMat = []
+    fr = open(fileName)
+    for line in fr.readlines():
+        lineArr = []
+        curLine = line.strip().split('\t')
+        for i in range(numFeat - 1):
+            lineArr.append(float(curLine[i]))
+        dataMat.append(lineArr)
+        labelMat.append(float(curLine[-1]))
+    return dataMat, labelMat

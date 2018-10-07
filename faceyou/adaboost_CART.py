@@ -25,12 +25,12 @@ def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):
     return retArray
 
 
-def getWeakClassifiers(dataArr, classLabels, D):
+def getWeakClassifiers(dataArr, classLabels, weights):
     """
     在加权数据集里面寻找最低错误率的单层决策树
     :param dataArr:
     :param classLabels:
-    :param D: 数据集权重 用于计算加权错误率
+    :param weights: 数据集权重 用于计算加权错误率
     :return:
     """
     dataMatrix = mat(dataArr)
@@ -45,9 +45,9 @@ def getWeakClassifiers(dataArr, classLabels, D):
     # 计算出用来分割的值，即在上文中的a
     dataset, labels = testSet.horse('train', labels=True)
     newDataSet = []
-    min_weights = D.min()
+    min_weights = weights.min()
     for i in range(len(dataset)):
-        newDataSet.extend([dataset[i]] * int(math.ceil(float(array(D.T)[0][i] / min_weights))))
+        newDataSet.extend([dataset[i]] * int(math.ceil(float(array(weights.T)[0][i] / min_weights))))
 
     for i in range(n):
         # 计算每个特征的最大值与最小值
@@ -69,7 +69,7 @@ def getWeakClassifiers(dataArr, classLabels, D):
                 # 标记正确结果为0
                 errArr[predictedVals == labelMat] = 0
                 # 计算加权错误率
-                weightedError = D.T * errArr
+                weightedError = weights.T * errArr
                 # 保存最小加权错误率
                 if weightedError < minError:
                     minError = weightedError
@@ -93,26 +93,26 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=4):
     weakClassArr = []
     m = shape(dataArr)[0]
     # 初始化数据集的权重
-    D = mat(ones((m, 1)) / m)
+    weights = mat(ones((m, 1)) / m)
     # 记录每个数据点的类别估计累计值
     aggClassEst = mat(zeros((m, 1)))
     # 迭代numIt次
     for i in range(numIt):
-        # 计算在当前样本权值D下的最小误差
+        # 计算在当前样本权值weights下的最小误差
         # 获取最优决策树桩
-        bestStump, error, classEst = getWeakClassifiers(dataArr, classLabels, D)
+        bestStump, error, classEst = getWeakClassifiers(dataArr, classLabels, weights)
         # 根据错误率计算权重alpha值
         # max(error, 1e-16)避免出现分母为0
         alpha = float(0.5 * log((1.0 - error) / max(error, 1e-16)))
         bestStump['alpha'] = alpha
         # 将当前分类器结果添加到分类器集
         weakClassArr.append(bestStump)
-        # 计算下一次迭代中的权重向量D
+        # 计算下一次迭代中的权重向量weights
         expon = multiply(-1 * alpha * mat(classLabels).T, classEst)
-        # 更新D
-        D = multiply(D, exp(expon))
+        # 更新weights
+        weights = multiply(weights, exp(expon))
         # 归一化
-        D = D / D.sum()
+        weights = weights / weights.sum()
         # 错误率累加
         # classEst的值为1或-1
         # alpha*classEst为每一个分类器的权值与对应样本的类别相乘

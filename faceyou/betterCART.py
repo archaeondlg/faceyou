@@ -8,7 +8,7 @@ cart_dtree.py
 """
 
 import matplotlib.pyplot as plt
-from faceyou.ID3 import createDateSet
+
 
 
 def print_dict(src_dict, level, src_dict_namestr=''):

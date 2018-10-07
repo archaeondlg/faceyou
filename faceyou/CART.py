@@ -78,7 +78,7 @@ def getbestfeat(dataset):
                 min_gini = gini_on_feature
                 best_feature_index = feature_index
                 best_feature_value = value
-
+    # 以后加阈值
     # if total_gini - min_gini < 0.00001:
     #     return None, None
     return best_feature_index, best_feature_value
@@ -92,9 +92,11 @@ def createTree(dataset, labels):
     :return:
     """
     classList = [example[-1] for example in dataset]
+    # 所有的类别都一样，就不用再划分了
     if classList.count(classList[0]) == len(classList):
-        return classList[0]  # 所有的类别都一样，就不用再划分了
-    if len(dataset[0]) == 1 or len(labels) == 1:  # 如果没有继续可以划分的特征，就多数表决决定分支的类别
+        return classList[0]
+    # 如果没有继续可以划分的特征，就多数表决决定分支的类别
+    if len(dataset[0]) == 1 or len(labels) == 1:
         return voter(classList)
     best_feature_index, best_feature_value = getbestfeat(dataset)
     bestFeat = best_feature_index
@@ -132,6 +134,7 @@ def voter(datas):
     :return:
     """
     # return Counter(classCount).most_common(1)[0][0]
+
     # results = {}
     # for data in datas:
     #     # data[-1] means dataType
@@ -151,7 +154,7 @@ def voter(datas):
 
 
 def isTree(obj):
-    return (type(obj).__name__ == 'dict')
+    return type(obj).__name__ == 'dict'
 
 
 def classify(inputTree, featLabels, testVec):  # 输入构造好的决策树
@@ -164,13 +167,14 @@ def classify(inputTree, featLabels, testVec):  # 输入构造好的决策树
     featIndex = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(firstStr)  # 特征值的索引
     for key in list(secondDict.keys()):
         if testVec[featIndex] == key:
-            if type(secondDict[key]).__name__ == 'dict':
+            if isTree(secondDict[key]):
                 # 注意局部变量与全局变量的关系，否则会报错
                 global classLabel
                 classLabel = classify(secondDict[key], featLabels, testVec)
             else:
                 classLabel = secondDict[key]
     return classLabel
+
 
 def classifylist(tree, dataset):
     # 返回预测对或者错，而不是返回预测的结果(对为0，错为1，方便计算预测错误的个数)
@@ -186,8 +190,14 @@ def classifylist(tree, dataset):
     return errorList
 
 
-# 计算预测误差
 def calcTestErr(myTree, testData, labels):
+    """
+    计算预测误差
+    :param myTree:
+    :param testData:
+    :param labels:
+    :return:
+    """
     errorCount = 0.0
     for i in range(len(testData)):
         if classify(myTree, labels, testData[i]) != testData[i][-1]:
